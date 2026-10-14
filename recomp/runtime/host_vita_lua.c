@@ -1182,6 +1182,8 @@ static int vita_lua_native_index_verify_body(lua_State *L)
     return top > base ? top - base : 0;
 }
 
+#include "host_vita_lua_userdata_same.h"
+
 static int vita_lua_native_index_same(lua_State *L, int a, int b)
 {
     int type = lua_type(L, a);
@@ -1204,7 +1206,8 @@ static int vita_lua_native_index_same(lua_State *L, int a, int b)
     if (length != lua_rawlen(L, b))
         return 0;
     if (length &&
-        memcmp(lua_touserdata(L, a), lua_touserdata(L, b), length) != 0)
+        !isaac_vita_lua_userdata_bytes_same(lua_touserdata(L, a),
+                                            lua_touserdata(L, b), length))
         return 0;
     has_a = lua_getmetatable(L, a);
     has_b = lua_getmetatable(L, b);

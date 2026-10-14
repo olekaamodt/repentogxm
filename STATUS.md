@@ -178,6 +178,11 @@ A door transition runs the room state reset (`00520160`, 73 ms per call,
    `Vector` `Position` getter (the userdata holds a self-relative pointer)
    and then disables itself silently; the seam's gain is lost, nothing
    visible happens. `getClass` VERIFY: 110k checks, 0 mismatches.
+   Fix in the tree, not yet run on device: the comparator now treats a word
+   that points into its own userdata block at the same offset in both boxes
+   as equal (`recomp/runtime/host_vita_lua_userdata_same.h`, test
+   `recomp/vita/test_lua_userdata_same.sh`). Release builds are unaffected
+   (VERIFY is off there).
 7. Saves over 64 KiB: the async save read path hung at boot once on such a
    file (2026-09-03); not reproduced since. Keep a backup.
 8. `KAGE VITA AUDIO REPLAY` (music source ran dry) appears only inside load
