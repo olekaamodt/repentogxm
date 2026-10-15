@@ -11,6 +11,12 @@
 # render, ~30 ms) is over the 27 ms that leaves room for the interpolated
 # 60 Hz frame. These two act on all of it at once.
 #
+# Measured 2026-10-15 on one Vita, normal rooms: no gain. Gameplay windows
+# 49.5 FPS vs 52.3 on opt-candidates.cmake, render median within +-0.7 ms in
+# every matched draw bucket, no faults. Likely cause: eboot.bin grows by
+# ~1.7 MB with the raw stack inlined everywhere, which costs instruction cache.
+# Kept for reference only; do not use for releases.
+#
 # Measure with -DISAAC_VITA_PHASE_PROFILE=ON -DISAAC_VITA_LOG_PRINTF_TO_FILE=ON
 # against the same options on release/opt-candidates.cmake.
 
