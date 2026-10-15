@@ -269,8 +269,15 @@ static void log_async_sink(unsigned sink, const char *line, uint32_t length)
 {
     if (sink == ISAAC_VITA_LOG_ASYNC_SINK_FILE)
         log_async_sink_file(line, (unsigned)length);
+#if defined(ISAAC_VITA_LOG_PRINTF_TO_FILE)
+    /* The file sink appends to first-arm-fault.log and makes the same one
+     * sceClibPrintf, so the debug output is unchanged. */
+    else
+        log_async_sink_file(line, (unsigned)length);
+#else
     else
         log_async_sink_printf(line, (unsigned)length);
+#endif
 }
 
 #if defined(ISAAC_VITA_LOG_ASYNC_FILE_BATCH)

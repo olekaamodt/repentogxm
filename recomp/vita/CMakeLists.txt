@@ -556,6 +556,11 @@ set(ISAAC_VITA_LOG_ASYNC_RING_KB 256 CACHE STRING
     "ISAAC_VITA_LOG_ASYNC ring capacity in KiB; a full ring drops and counts the line ([kage-vita] log-async dropped=N)")
 option(ISAAC_VITA_LOG_ASYNC_FILE_BATCH
        "Append already queued adjacent native FILE records together (at most 8 records/4096 bytes); preserve one debug call per record" OFF)
+option(ISAAC_VITA_LOG_PRINTF_TO_FILE
+       "With ISAAC_VITA_LOG_ASYNC: also append the debug-print-only records (ph120 phase profile and other [kage-vita] lines) to first-arm-fault.log, so a profiling build can be measured without a kernel debug-log plugin. The logger thread on CPU 2 does the extra writes; the debug print itself is unchanged" OFF)
+if(ISAAC_VITA_LOG_PRINTF_TO_FILE AND NOT ISAAC_VITA_LOG_ASYNC)
+  message(FATAL_ERROR "ISAAC_VITA_LOG_PRINTF_TO_FILE requires ISAAC_VITA_LOG_ASYNC=ON")
+endif()
 option(ISAAC_VITA_PHASE_PROFILE
        "Aggregate loop timings plus dispatch/GL counts every 120 loops" OFF)
 option(ISAAC_VITA_ROOM_LOG_MARKERS
@@ -4558,6 +4563,12 @@ else()
       "${ISAAC_RUNTIME}/host_vita_log_async.c"
       APPEND PROPERTY COMPILE_DEFINITIONS
         ISAAC_VITA_LOG_ASYNC_RING_KB=${ISAAC_VITA_LOG_ASYNC_RING_KB})
+    if(ISAAC_VITA_LOG_PRINTF_TO_FILE)
+      set_property(SOURCE
+        "${ISAAC_RUNTIME}/host_vita_log_async.c"
+        APPEND PROPERTY COMPILE_DEFINITIONS
+          ISAAC_VITA_LOG_PRINTF_TO_FILE=1)
+    endif()
     target_link_options(isaac_first_arm_fault PRIVATE -Wl,--wrap=abort)
     message(STATUS
       "Isaac Vita asynchronous logger: ${ISAAC_VITA_LOG_ASYNC_RING_KB} KiB "
