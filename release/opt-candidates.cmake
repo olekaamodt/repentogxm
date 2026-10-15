@@ -1,8 +1,10 @@
 # repentogxm optimization candidates on top of v0.1.1-alpha.
 #
-# The v0.1.1-alpha option set plus three optimizations that are implemented,
-# host-tested and fall back to the original code, but have never been
-# measured on a Vita (STATUS.md "What is in the tree", recomp/vita/README.md).
+# The v0.1.1-alpha option set plus two optimizations that are implemented,
+# host-tested and fall back to the original code. Measured on one Vita
+# 2026-10-15: attribute location lookups per draw 13.4 -> 1.7, room render
+# median about 1-1.3 ms lower in the busier scenes, no faults or fallbacks
+# (STATUS.md "What is in the tree", recomp/vita/README.md).
 # Configure exactly like the release, swapping the -C file:
 #
 #   cmake -S recomp/vita -B <build> -G Ninja -C release/opt-candidates.cmake \
@@ -35,13 +37,8 @@ set(ISAAC_VITA_SHADER_ATTRIB_LOCATION_MEMO ON CACHE BOOL "" FORCE)
 #    CMake together with GL_WRAPPER_TIME or STALL_PROBE (both OFF here).
 set(ISAAC_VITA_SHADER_ATTRIB_DIRECT_STATE ON CACHE BOOL "" FORCE)
 
-# 3. Door transitions, "45-50 % of a room entry was PNG sprite-sheet reload"
-#    (STATUS.md problem 2): keep recently released sprite sheets uploaded on a
-#    byte-budgeted LRU so re-entering a room skips fopen/inflate/glTexImage2D.
-#    48 MiB holds one room's miss set; the headroom rule evicts whenever
-#    vitaGL free memory drops below 64 MiB, so it cannot cause a texture
-#    allocation failure the release build would not have. The release file
-#    carries a budget of 8; 48 is the option's own default.
-set(ISAAC_VITA_IMAGE_RETAIN ON CACHE BOOL "" FORCE)
-set(ISAAC_VITA_IMAGE_RETAIN_BUDGET_MB 48 CACHE STRING "" FORCE)
-set(ISAAC_VITA_IMAGE_RETAIN_HEADROOM_MB 64 CACHE STRING "" FORCE)
+# Sprite-sheet retention (ISAAC_VITA_IMAGE_RETAIN) was measured on device
+# 2026-10-15 and dropped: vitaGL free memory sits at the 64 MiB headroom
+# floor during play, so 1 of 1,856 offered sheets was reused and door-
+# transition stalls were unchanged (median 0.90 s vs 0.94 s). It stays OFF,
+# as in the release.
